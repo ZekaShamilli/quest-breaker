@@ -14,8 +14,8 @@ Quest-Breaker: Narrative Deadlock & Inconsistency Engine for Branching Games
 **Outcome:** upload the quest graph as JSON and get, in seconds, every deadlock with the exact failing playthrough. Example: "Aydan died in Step 2 'Silence the Minstrel', but Step 6 'Royal Wedding' has him perform". Each finding comes with an AI-written in-world fix. Adversarial player bots (Murder Hobo, Contrarian, Speedrunner) show which play styles get soft-locked.
 
 ## Links
-- Demo link: <TODO public URL>
-- Source code: <TODO GitHub URL>
+- Demo link: https://quest-breaker.onrender.com (free hosting: if idle, the first load takes up to ~1 minute to wake up; open it once before judging)
+- Source code: https://github.com/ZekaShamilli/quest-breaker
 - Video: <TODO>
 - Setup instructions: see README.md in the repo (one command: `./run.ps1` on Windows or `./run.sh` on Linux/macOS, or Docker).
 

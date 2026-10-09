@@ -184,6 +184,84 @@ function NodeDetail({ node, reports, titles, onReport }) {
   );
 }
 
+const PLAIN = {
+  StateContradiction: ["Broken by an earlier choice", "A quest needs something that a choice the player made earlier has made impossible (e.g. a character who was killed)."],
+  CircularDependency: ["Waits on itself", "A quest needs something that can only happen after it, or a group of quests loops with no way out."],
+  UnreachablePath: ["Can never be reached", "No playthrough ever gets the player to this quest. It is dead content."],
+};
+
+function Overview({ result, runs, titles, onOpen, onRuns }) {
+  const reports = result.reports;
+  const critical = reports.filter((r) => r.severity === "critical").length;
+  const ai = reports.filter((r) => r.source === "llm").length;
+  const order = [...reports.keys()].sort((a, b) => (reports[a].severity === "critical" ? 0 : 1) - (reports[b].severity === "critical" ? 0 : 1));
+  const stuck = runs.filter((r) => r.soft_locked);
+  const types = [...new Set(reports.map((r) => r.error_type))];
+  return (
+    <div className="space-y-4 text-sm">
+      <div className={`rounded-lg border p-3 ${reports.length === 0 ? "border-emerald-500/40 bg-emerald-500/10" : critical ? "border-red-500/40 bg-red-500/10" : "border-amber-400/40 bg-amber-400/10"}`}>
+        <div className="font-semibold text-slate-100">
+          {reports.length === 0 ? "This story is consistent" : critical ? "Players can get stuck in this story" : "No dead ends, but some content is broken"}
+        </div>
+        <p className="mt-1 text-slate-300">
+          {reports.length === 0
+            ? "Every reachable storyline checks out. No quest depends on something an earlier choice removed."
+            : `Found ${reports.length} problem${reports.length > 1 ? "s" : ""}: ${critical} critical (the player gets stuck), ${reports.length - critical} warning${reports.length - critical === 1 ? "" : "s"}. ${ai ? `${ai} ${ai === 1 ? "was" : "were"} found by AI reading the story text.` : ""}`}
+        </p>
+      </div>
+
+      {reports.length > 0 && (
+        <section>
+          <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">What to fix, most urgent first</h4>
+          <ol className="space-y-2">
+            {order.map((i, n) => {
+              const r = reports[i];
+              const where = r.affected_nodes.map((id) => titles[id]).join(", ");
+              const cause = r.conflict_nodes.map((id) => titles[id]).join(", ");
+              return (
+                <li key={i}>
+                  <button onClick={() => onOpen(i)} className="w-full rounded-lg border border-slate-700/70 bg-[#141821] p-3 text-left hover:border-slate-500">
+                    <div className="flex items-center gap-2 text-xs">
+                      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-slate-700 font-bold">{n + 1}</span>
+                      <span className={r.severity === "critical" ? "text-red-300" : "text-amber-200"}>{PLAIN[r.error_type][0]}</span>
+                      <span className="ml-auto text-slate-500">{r.source === "llm" ? "found by AI" : "found by graph check"}</span>
+                    </div>
+                    <p className="mt-1.5 text-slate-200"><b>{where}</b>{cause && <> is broken by <b>{cause}</b></>}.</p>
+                    {r.suggested_fix && <p className="mt-1 text-xs text-violet-200"><Wand2 size={11} className="mr-1 inline" />{r.suggested_fix}</p>}
+                  </button>
+                </li>
+              );
+            })}
+          </ol>
+        </section>
+      )}
+
+      <section>
+        <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Player test</h4>
+        {runs.length === 0
+          ? <p className="text-slate-400">Not run yet. <button onClick={onRuns} className="text-sky-300 underline">Run all three player types</button> to see who gets stuck.</p>
+          : <p className="text-slate-300">{stuck.length ? `${stuck.length} of ${runs.length} player types got stuck: ${stuck.map((r) => ARCHETYPE[r.archetype].label).join(", ")}.` : `All ${runs.length} player types reached an ending.`}</p>}
+      </section>
+
+      <section>
+        <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">How to read the graph</h4>
+        <ul className="space-y-1.5 text-slate-300">
+          <li className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-emerald-500" /> Green: quest works on every path that reaches it</li>
+          <li className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-red-500" /> Red: quest is broken (a deadlock lands here)</li>
+          <li className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-amber-400" /> Amber: the earlier choice that causes the break</li>
+          <li className="flex items-center gap-2"><span className="h-0.5 w-2.5 bg-sky-400" /> Blue line: the exact playthrough that fails. Click a problem to show it.</li>
+        </ul>
+        {types.length > 0 && (
+          <dl className="mt-3 space-y-2 text-xs">
+            {types.map((t) => <div key={t}><dt className="font-semibold text-slate-200">{t}: {PLAIN[t][0]}</dt><dd className="text-slate-400">{PLAIN[t][1]}</dd></div>)}
+            {ai > 0 && <div><dt className="font-semibold text-slate-200">Found by AI</dt><dd className="text-slate-400">Contradictions that exist only in the story text (not in the game's flags), found by an AI model reading each playthrough.</dd></div>}
+          </dl>
+        )}
+      </section>
+    </div>
+  );
+}
+
 function Btn({ onClick, busy, icon: Icon, children, tone = "slate" }) {
   const tones = { slate: "bg-slate-800 hover:bg-slate-700", red: "bg-red-600 hover:bg-red-500", sky: "bg-sky-600 hover:bg-sky-500" };
   return (
@@ -200,7 +278,7 @@ export default function App() {
   const [useLlm, setUseLlm] = useState(true);
   const [result, setResult] = useState(null);
   const [runs, setRuns] = useState([]);
-  const [tab, setTab] = useState("issues");
+  const [tab, setTab] = useState("overview");
   const [active, setActive] = useState(null); // {kind: "report"|"run", idx}
   const [selected, setSelected] = useState(null);
   const [busy, setBusy] = useState("");
@@ -213,7 +291,7 @@ export default function App() {
     setBusy("audit"); setError(""); setActive(null);
     try {
       setResult(await api("validate", { ...source, use_llm: llm }));
-      setTab("issues");
+      setTab("overview");
     } catch (e) { setError(e.message); }
     setBusy("");
   }, [dataset, custom, useLlm]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -313,12 +391,17 @@ export default function App() {
             <div className="mt-1 flex items-center gap-1 text-[11px] text-slate-500"><Bot size={11} /> LLM: {result?.llm_status ?? "—"}</div>
           </div>
           <nav className="flex border-b border-slate-800 text-sm">
-            {[["issues", `Deadlocks (${result?.reports.length ?? 0})`], ["sims", `Simulations (${runs.length})`], ["node", "Node"]].map(([k, label]) => (
+            {[["overview", "Overview"], ["issues", `Deadlocks (${result?.reports.length ?? 0})`], ["sims", `Simulations (${runs.length})`], ["node", "Node"]].map(([k, label]) => (
               <button key={k} onClick={() => setTab(k)}
                 className={`flex-1 px-3 py-2 ${tab === k ? "border-b-2 border-sky-400 text-slate-100" : "text-slate-500 hover:text-slate-300"}`}>{label}</button>
             ))}
           </nav>
           <div className="min-h-0 flex-1 space-y-2 overflow-y-auto p-3">
+            {tab === "overview" && result && (
+              <Overview result={result} runs={runs} titles={titles}
+                onOpen={(i) => { setActive({ kind: "report", idx: i }); setTab("issues"); }}
+                onRuns={() => simulate(Object.keys(ARCHETYPE), "all")} />
+            )}
             {tab === "issues" && result?.reports.map((r, i) => (
               <Report key={i} r={r} titles={titles} active={active?.kind === "report" && active.idx === i}
                 onClick={() => setActive(active?.kind === "report" && active.idx === i ? null : { kind: "report", idx: i })} />
