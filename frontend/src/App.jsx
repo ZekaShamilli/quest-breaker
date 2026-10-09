@@ -50,7 +50,7 @@ function QuestNodeCard({ data }) {
 const nodeTypes = { quest: QuestNodeCard };
 
 function Graph({ result, path, stepLabels, onSelectNode }) {
-  const { fitView } = useReactFlow();
+  const { setViewport } = useReactFlow();
   const onPath = useMemo(() => new Set(path), [path]);
   const pathEdges = useMemo(() => new Set(path.slice(1).map((n, i) => `${path[i]}->${n}`)), [path]);
 
@@ -67,10 +67,22 @@ function Graph({ result, path, stepLabels, onSelectNode }) {
     };
   }), [result, pathEdges, path]);
 
-  useEffect(() => { setTimeout(() => fitView({ padding: 0.15, duration: 300 }), 0); }, [result, fitView]);
+  const box = useRef();
+  useEffect(() => {  // fit the whole graph into the pane (fitView proved unreliable here)
+    const t = setTimeout(() => {
+      const el = box.current;
+      if (!el) return;
+      const xs = result.nodes.map((n) => n.position.x), ys = result.nodes.map((n) => n.position.y);
+      const w = Math.max(...xs) + 224, h = Math.max(...ys) - Math.min(...ys) + 58;
+      const zoom = Math.min(el.clientWidth / (w * 1.12), el.clientHeight / (h * 1.5), 1.2);
+      setViewport({ zoom, x: (el.clientWidth - w * zoom) / 2, y: el.clientHeight / 2 - ((Math.max(...ys) + Math.min(...ys) + 58) / 2) * zoom }, { duration: 200 });
+    }, 120);
+    return () => clearTimeout(t);
+  }, [result, setViewport]);
+
 
   return (
-    <ReactFlow nodes={nodes} edges={edges} nodeTypes={nodeTypes} nodesConnectable={false} minZoom={0.2}
+    <ReactFlow ref={box} nodes={nodes} edges={edges} nodeTypes={nodeTypes} nodesConnectable={false} minZoom={0.1}
       onNodeClick={(_, n) => onSelectNode(n.id)} onPaneClick={() => onSelectNode(null)}>
       <Background color="#1f2937" gap={22} />
       <Controls className="!border-slate-700 [&>button]:!bg-slate-800 [&>button]:!border-slate-700 [&>button]:!fill-slate-300" />
