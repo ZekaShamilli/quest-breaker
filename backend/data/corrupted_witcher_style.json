@@ -1,0 +1,120 @@
+{
+  "name": "Ashes of Vyzmar (corrupted)",
+  "start": "q1",
+  "initial_state": {
+    "garrick": "alive",
+    "debt": "unpaid",
+    "rebellion": "neutral",
+    "lambert": "absent",
+    "archive_key": "missing",
+    "sword": "none",
+    "prisoners": "captive"
+  },
+  "nodes": [
+    {
+      "id": "q1", "title": "The Smith's Debt",
+      "description": "Baron Vrell's men drag Garrick the blacksmith into the square. He owes the Baron a fortune, and the Baron wants the monster hunter to settle it.",
+      "character_actors": ["Garrick", "Baron Vrell"],
+      "next_nodes": ["q2a", "q2b", "q2c"], "tags": ["main"]
+    },
+    {
+      "id": "q2a", "title": "Execute the Smith",
+      "description": "You accept the Baron's coin and execute Garrick in front of the crowd. The debt is settled in blood.",
+      "character_actors": ["Garrick", "Baron Vrell"],
+      "state_mutations": {"garrick": "dead", "debt": "settled"},
+      "next_nodes": ["q3"], "tags": ["violent"]
+    },
+    {
+      "id": "q2b", "title": "Pay Garrick's Debt",
+      "description": "You empty your purse to clear Garrick's debt. The grateful smith promises to forge you anything.",
+      "character_actors": ["Garrick"],
+      "state_mutations": {"debt": "paid"},
+      "next_nodes": ["q3"], "tags": ["help", "main"]
+    },
+    {
+      "id": "q2c", "title": "Walk Away",
+      "description": "Not your problem. You leave Garrick to haggle with the Baron's thugs himself.",
+      "next_nodes": ["q3"], "tags": ["refuse"]
+    },
+    {
+      "id": "q3", "title": "The Rebel Courier",
+      "description": "A courier from Ysolde's rebellion finds you at the inn: the Baron's keep can be stormed, but they need a hunter with a silver blade.",
+      "character_actors": ["Ysolde"],
+      "next_nodes": ["q3c", "q4a", "q4b"], "tags": ["main"]
+    },
+    {
+      "id": "q3c", "title": "Recruit Lambert",
+      "description": "Your old sparring partner Lambert is drinking away his wages. A little persuasion and he joins your cause.",
+      "character_actors": ["Lambert"],
+      "state_mutations": {"lambert": "companion"},
+      "next_nodes": ["q4a", "q4b"], "tags": ["optional", "companion"]
+    },
+    {
+      "id": "q4a", "title": "Join the Rebellion",
+      "description": "You swear to Ysolde's cause and learn the location of the keep's postern gate.",
+      "character_actors": ["Ysolde"],
+      "state_mutations": {"rebellion": "joined"},
+      "next_nodes": ["q5"], "tags": ["help", "main"]
+    },
+    {
+      "id": "q4b", "title": "Sell Out the Rebels",
+      "description": "You take the Baron's bounty and hand over the rebels' hideout. Ysolde's lieutenants hang at dawn.",
+      "character_actors": ["Ysolde", "Baron Vrell"],
+      "state_mutations": {"rebellion": "crushed"},
+      "next_nodes": ["q5"], "tags": ["refuse", "enemy_faction"]
+    },
+    {
+      "id": "q5", "title": "Royal Armor",
+      "description": "Only Garrick knows the old royal technique. He must forge the silver blade from the ore you recovered.",
+      "character_actors": ["Garrick"],
+      "pre_conditions": {"garrick": "alive"},
+      "state_mutations": {"sword": "forged"},
+      "next_nodes": ["q6", "q5x"], "tags": ["main"]
+    },
+    {
+      "id": "q5x", "title": "The Drowned Archive",
+      "description": "A flooded library beneath the keep. The archive door only opens with the Archivist's key.",
+      "pre_conditions": {"archive_key": "found"},
+      "next_nodes": ["q5y"], "tags": ["optional"]
+    },
+    {
+      "id": "q5y", "title": "The Archivist's Vault",
+      "description": "Inside the archive, the Archivist's skeleton still clutches the key to the archive itself.",
+      "state_mutations": {"archive_key": "found"},
+      "next_nodes": ["q6"], "tags": ["optional"]
+    },
+    {
+      "id": "q6", "title": "Storm the Keep",
+      "description": "Ysolde's rebels breach the postern gate while you cut through the Baron's guard with the silver blade.",
+      "character_actors": ["Ysolde"],
+      "pre_conditions": {"rebellion": "joined", "sword": "forged"},
+      "state_mutations": {"baron": "defeated"},
+      "next_nodes": ["q7a", "q7b"], "tags": ["main"]
+    },
+    {
+      "id": "q7a", "title": "Spare the Prisoners",
+      "description": "You unlock the dungeon cells and let the Baron's prisoners walk free.",
+      "state_mutations": {"prisoners": "freed"},
+      "next_nodes": ["q8"], "tags": ["help", "main"]
+    },
+    {
+      "id": "q7b", "title": "Burn the Dungeons",
+      "description": "You torch the dungeons with everyone still inside. No witnesses.",
+      "state_mutations": {"prisoners": "dead"},
+      "next_nodes": ["q8"], "tags": ["violent"]
+    },
+    {
+      "id": "q8", "title": "The Victory Feast",
+      "description": "The town celebrates the Baron's fall. Lambert raises a toast to your friendship, and the freed prisoners dance in the square.",
+      "character_actors": ["Ysolde", "Lambert"],
+      "narrative_requirements": "Lambert is present as the player's companion; the prisoners from the dungeon are alive and free.",
+      "tags": ["main", "ending"]
+    },
+    {
+      "id": "q_shrine", "title": "The Forgotten Shrine",
+      "description": "A shrine to a forgotten goddess, cut from the main storyline during development.",
+      "state_mutations": {"blessing": "granted"},
+      "next_nodes": ["q6"], "tags": ["optional"]
+    }
+  ]
+}

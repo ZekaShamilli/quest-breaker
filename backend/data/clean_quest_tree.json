@@ -1,0 +1,105 @@
+{
+  "name": "The Saltmarsh Accord (clean)",
+  "start": "c1",
+  "initial_state": {
+    "harbor_master": "alive",
+    "smugglers": "active",
+    "map": "none",
+    "mira": "absent",
+    "rumors": "unheard",
+    "guild": "neutral",
+    "tide_lock": "closed",
+    "leviathan": "awake"
+  },
+  "nodes": [
+    {
+      "id": "c1", "title": "Fog over Saltmarsh",
+      "description": "Smugglers have choked the harbor and Harbor Master Oswin begs for help reopening the tide lock.",
+      "character_actors": ["Oswin"],
+      "next_nodes": ["c2a", "c2b", "c2c"], "tags": ["main"]
+    },
+    {
+      "id": "c2a", "title": "Duel the Smuggler Captain",
+      "description": "You challenge the smuggler captain on the docks and send his crew fleeing.",
+      "state_mutations": {"smugglers": "routed"},
+      "next_nodes": ["c3"], "tags": ["violent"]
+    },
+    {
+      "id": "c2b", "title": "Negotiate with the Smugglers",
+      "description": "You broker a truce: the smugglers stand down in exchange for safe passage.",
+      "state_mutations": {"smugglers": "allied"},
+      "next_nodes": ["c3"], "tags": ["help", "main"]
+    },
+    {
+      "id": "c2c", "title": "Ignore the Harbor Plea",
+      "description": "You shrug off Oswin's plea and head to the harbor office on your own business.",
+      "next_nodes": ["c3"], "tags": ["refuse"]
+    },
+    {
+      "id": "c3", "title": "The Harbor Master's Map",
+      "description": "Whatever your choice on the docks, Oswin hands you his chart of the sunken channels.",
+      "character_actors": ["Oswin"],
+      "pre_conditions": {"harbor_master": "alive"},
+      "state_mutations": {"map": "charted"},
+      "next_nodes": ["c3m", "c4"], "tags": ["main"]
+    },
+    {
+      "id": "c3m", "title": "Recruit Mira the Navigator",
+      "description": "Mira, a disgraced navigator, offers to guide you through the channels.",
+      "character_actors": ["Mira"],
+      "state_mutations": {"mira": "companion"},
+      "next_nodes": ["c4"], "tags": ["optional", "companion"]
+    },
+    {
+      "id": "c4", "title": "The Drowned Rat Tavern",
+      "description": "The tavern is the town's beating heart. Both the Fishers' Guild and the Merchant Cartel want your allegiance.",
+      "next_nodes": ["c4r", "c5a", "c5b"], "tags": ["main"]
+    },
+    {
+      "id": "c4r", "title": "Rumors at the Bar",
+      "description": "A round of drinks loosens tongues about the leviathan beneath the lock.",
+      "state_mutations": {"rumors": "heard"},
+      "next_nodes": ["c4"], "tags": ["optional"]
+    },
+    {
+      "id": "c5a", "title": "Side with the Fishers' Guild",
+      "description": "The fishers lend you their boats and crews.",
+      "state_mutations": {"guild": "fishers"},
+      "next_nodes": ["c6"], "tags": ["help", "main"]
+    },
+    {
+      "id": "c5b", "title": "Side with the Merchant Cartel",
+      "description": "The cartel pays well and asks few questions. The fishers curse your name.",
+      "state_mutations": {"guild": "cartel"},
+      "next_nodes": ["c6"], "tags": ["refuse", "enemy_faction"]
+    },
+    {
+      "id": "c6", "title": "Open the Tide Lock",
+      "description": "Following Oswin's chart, you reach the rusted tide lock and force it open.",
+      "pre_conditions": {"map": "charted"},
+      "state_mutations": {"tide_lock": "open"},
+      "next_nodes": ["c7a", "c7b"], "tags": ["main"]
+    },
+    {
+      "id": "c7a", "title": "Calm the Leviathan",
+      "description": "The leviathan rises through the open lock. You sing the old shanty and it sinks back to sleep.",
+      "pre_conditions": {"tide_lock": "open"},
+      "state_mutations": {"leviathan": "calmed"},
+      "next_nodes": ["c8"], "tags": ["help", "main"]
+    },
+    {
+      "id": "c7b", "title": "Slay the Leviathan",
+      "description": "The leviathan rises through the open lock and you drive a harpoon through its eye.",
+      "pre_conditions": {"tide_lock": "open"},
+      "state_mutations": {"leviathan": "slain"},
+      "next_nodes": ["c8"], "tags": ["violent"]
+    },
+    {
+      "id": "c8", "title": "Dawn over the Marsh",
+      "description": "Ships sail again. Oswin thanks you on the pier as the fog finally lifts.",
+      "character_actors": ["Oswin"],
+      "narrative_requirements": "Oswin the Harbor Master is alive and the tide lock has been reopened.",
+      "tags": ["main", "ending"]
+    }
+  ]
+}

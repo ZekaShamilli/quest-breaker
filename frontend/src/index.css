@@ -1,0 +1,7 @@
+@import "tailwindcss";
+
+html, body, #root { height: 100%; }
+body { background: #0b0d12; color: #e5e7eb; font-family: ui-sans-serif, system-ui, sans-serif; }
+.react-flow__attribution { display: none; }
+@keyframes glow { 0%, 100% { box-shadow: 0 0 10px 2px rgba(239,68,68,.55); } 50% { box-shadow: 0 0 24px 6px rgba(239,68,68,.9); } }
+.glow-red { animation: glow 1.6s ease-in-out infinite; }

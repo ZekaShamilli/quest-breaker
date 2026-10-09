@@ -1,0 +1,59 @@
+{
+  "name": "The Minstrel's Wedding (bugs hidden in text only)",
+  "start": "m1",
+  "initial_state": {"crown": "lost", "caravan": "waiting"},
+  "nodes": [
+    {
+      "id": "m1", "title": "Court of the Shah",
+      "description": "Aydan the minstrel sings a mocking song about the Shah in front of the whole court. The Shah turns to you: 'Deal with him.'",
+      "character_actors": ["Aydan", "the Shah"],
+      "next_nodes": ["m2a", "m2b"], "tags": ["main"]
+    },
+    {
+      "id": "m2a", "title": "Silence the Minstrel",
+      "description": "You throw Aydan into the dungeon beneath the palace. Three weeks later the jailer reports that he died of fever in his cell.",
+      "character_actors": ["Aydan"],
+      "next_nodes": ["m3"], "tags": ["violent"]
+    },
+    {
+      "id": "m2b", "title": "Pardon the Minstrel",
+      "description": "You pay Aydan's fine yourself. Grateful, he swears to sing at every great feast of the realm.",
+      "character_actors": ["Aydan"],
+      "next_nodes": ["m3"], "tags": ["help", "main"]
+    },
+    {
+      "id": "m3", "title": "The Caravan Road",
+      "description": "Raiders are harrying the trade caravans on the road along the Kura river.",
+      "next_nodes": ["m4a", "m4b"], "tags": ["main"]
+    },
+    {
+      "id": "m4a", "title": "Burn the Bridge",
+      "description": "You set fire to the old stone-and-timber bridge over the Kura. It collapses into the river and the raiders are cut off for good.",
+      "next_nodes": ["m5"], "tags": ["violent"]
+    },
+    {
+      "id": "m4b", "title": "Hold the Bridge",
+      "description": "You and the caravan guards hold the old bridge over the Kura until the raiders give up.",
+      "next_nodes": ["m5"], "tags": ["help", "main"]
+    },
+    {
+      "id": "m5", "title": "The Lost Crown",
+      "description": "In the raiders' abandoned camp you find the Shah's lost wedding crown.",
+      "state_mutations": {"crown": "found"},
+      "next_nodes": ["m6"], "tags": ["main"]
+    },
+    {
+      "id": "m6", "title": "The Royal Wedding",
+      "description": "The Shah crowns his bride with the recovered crown while Aydan the minstrel performs the wedding song before the whole court.",
+      "character_actors": ["the Shah", "Aydan"],
+      "pre_conditions": {"crown": "found"},
+      "next_nodes": ["m7"], "tags": ["main"]
+    },
+    {
+      "id": "m7", "title": "Return to the Coast",
+      "description": "The wedding caravan heads home, crossing the old bridge over the Kura river at sunset.",
+      "state_mutations": {"caravan": "home"},
+      "tags": ["main", "ending"]
+    }
+  ]
+}
